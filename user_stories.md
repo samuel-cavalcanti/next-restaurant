@@ -1,5 +1,5 @@
 ---
-fontsize: 24pt
+font-size: 24pt
 ---
 # User Stories Restaurant
 

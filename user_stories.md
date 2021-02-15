@@ -1,6 +1,3 @@
----
-font-size: 24pt
----
 # User Stories Restaurant
 
 ## Faça um pedido

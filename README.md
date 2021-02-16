@@ -13,4 +13,8 @@ Para participar do projeto você precisa ter o [nodejs](https://nodejs.org/) ins
 Dúvidas ? estou no zap. Qualquer hora qualquer momento.
 
 # Site da aplicação web
-[next restaurant](next-restaurant.vercel.app)
+[next restaurant](next-restaurant.vercel.app) **onde o cliente irá realizar o pedido**  
+[next restaurant cozinha](next-restaurant.vercel.app/cozinha) **onde os cozinheiros irão ver os pedidos**  
+
+OBS: atualmente só é permidio a realização do pedido de café, qualquer outro end point é invalidado.
+

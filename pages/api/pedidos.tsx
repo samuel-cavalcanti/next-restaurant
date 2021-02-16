@@ -8,7 +8,7 @@ type Order = {
 
 
 const orders: Order[] = [
-    { id: 0, name: 'Café', description: 'É... tem uma mina chata pra KRL, querendo café.' },
+    { id: 0, name: 'Café', description: 'com 2 colheres de açucar' },
     { id: 1, name: 'Arroz com feijão', description: 'retirar o feijão e o arroz, obrigado' },
     { id: 2, name: 'Macarrão 4 queijos', description: '' },
 ]

@@ -1,5 +1,7 @@
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
+import Link from 'next/link'
+import logo from './components/logo'
 
 export default function Home() {
 
@@ -8,17 +10,22 @@ export default function Home() {
   const subTitle = 'Escolha um prato'
 
   const plates = [
-    { title: 'Quero Café', description: 'Café de verdade não tem leite' },
-    { title: 'Café, eu quero', description: 'Café de verdade não tem açúcar' },
-    { title: 'I could some coffee', description: `if the truth is hurts they don't believe it` },
-    { title: 'some coffee, I could', description: ' buy me a coffee  ☕' },
+    { title: 'Quero Café', description: 'Café de verdade não tem leite', name: 'Café' },
+    { title: 'Café, eu quero', description: 'Café de verdade não tem açúcar', name: 'Café' },
+    { title: 'I could some coffee', description: `if the truth is hurts they don't believe it`, name: 'Café' },
+    { title: 'some coffee, I could', description: ' buy me a coffee  ☕', name: 'Café' },
   ]
 
-  const cards = plates.map((plate) => (
-    <a className={styles.card}>
-      <h3>{plate.title}</h3>
-      <p>{plate.description}</p>
-    </a>))
+
+
+  const cards = plates.map((plate, index) => (
+    <Link key={index} href={`/aguarde/${plate.name}`} >
+      <a  className={styles.card}>
+        <h3>{plate.title}</h3>
+        <p>{plate.description}</p>
+      </a>
+    </Link>
+  ))
 
 
   return (
@@ -42,12 +49,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className={styles.footer}>
-        <a>
-          Desenvolvido pela &nbsp;<strong>Sem Condições software house</strong>
-          <img src="/code_for_food.jpg" alt="Sem condições Logo" className={styles.logo} />
-        </a>
-      </footer>
+      {logo}
     </div>
   )
 }

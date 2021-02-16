@@ -2,7 +2,7 @@ import { useRouter } from 'next/router'
 import { Spinner } from 'react-bootstrap';
 import styles from '../../styles/Home.module.css';
 import React from 'react';
-import logo from '../components/logo';
+import logo from '../../components/logo';
 
 export default function Wait() {
 

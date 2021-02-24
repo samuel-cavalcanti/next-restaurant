@@ -10,7 +10,7 @@ export async function getStaticPaths() {
             {
                 params:
                     {
-                        plateName: 'Café'
+                        dishName: 'Café'
                     }
             }
         ],
@@ -18,15 +18,17 @@ export async function getStaticPaths() {
     }
 }
 
-export async function getStaticProps(contex) {
-    const plateName = contex.params.plateName
+export async function getStaticProps(context) {
+    const dishName = context.params.dishName
 
     return {
         props: {
-            plateName
+            dishName: dishName
         }
     }
 }
+
+
 
 export default function Wait(props) {
 
@@ -35,7 +37,7 @@ export default function Wait(props) {
         <div className={styles.container}>
             <main className={styles.main}>
                 <h1 className={styles.title} style={{margin: 50}}>
-                    Aguarde enquanto o {props.plateName} está sendo preparado
+                    Aguarde enquanto o {props.dishName} está sendo preparado
                 </h1>
                 <Spinner animation="border"/>
             </main>

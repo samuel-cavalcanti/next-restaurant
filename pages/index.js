@@ -1,55 +1,60 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
-import Link from 'next/link'
-import logo from '../components/logo'
+import {useState} from "react";
+import Menu from '../components/menu'
+import {useRouter} from "next/router";
+import Register from "../components/register";
 
-export default function Home() {
+export async function getServerSideProps(context) {
+    const baseUrl = process.env.VERCEL_URL
+    const response = await fetch(`${baseUrl}/api/pratos`)
+    const dishes = await response.json()
 
-  const restaurantTitle = ' Bem vindo ao Next Restaurant'
-  const headerTitle = 'Next Restaurant'
-  const subTitle = 'Escolha um prato'
+    return {
+        props: {
+            dishes,
+            baseUrl
+        }
+    }
+}
 
-  const plates = [
-    { title: 'Quero Café', description: 'Café de verdade não tem leite', name: 'Café' },
-    { title: 'Café, eu quero', description: 'Café de verdade não tem açúcar', name: 'Café' },
-    { title: 'I could some coffee', description: `if the truth is hurts they don't believe it`, name: 'Café' },
-    { title: 'some coffee, I could', description: ' buy me a coffee  ☕', name: 'Café' },
-  ]
-
-
-
-  const cards = plates.map((plate, index) => (
-    <Link key={index} href={`/aguarde/${plate.name}`} >
-      <a  className={styles.card}>
-        <h3>{plate.title}</h3>
-        <p>{plate.description}</p>
-      </a>
-    </Link>
-  ))
+export default function Home(props) {
 
 
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>{headerTitle}</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    const dishes = props.dishes;
+    const router = useRouter()
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          {restaurantTitle}
-        </h1>
+    const [selectedDish, setDish] = useState(undefined)
 
-        <p className={styles.description}>
-          {subTitle}
-        </p>
+    const selectDish = (dish) => {
+        setDish(dish)
+    }
 
-        <div className={styles.grid}>
-          {cards}
-        </div>
-      </main>
+    const menu = <Menu dishes={dishes} selectDish={selectDish.bind(this)}/>;
 
-      {logo}
-    </div>
-  )
+
+    const submitEvent = (client) => {
+        const order = {name: selectedDish.name, description: selectedDish.description, client}
+        const url = `${props.baseUrl}/api/pedidos`
+        const requestInit = {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            method: 'POST', body: JSON.stringify(order)
+        }
+
+        fetch(url, requestInit)
+        router.push(`/aguarde/${selectedDish.name}`);
+    }
+
+    const register = <Register submit={submitEvent.bind(this)}/>
+
+
+    console.log(selectedDish)
+
+    const currentSelection = selectedDish ? register : menu
+
+
+    return (
+        currentSelection
+    )
 }

@@ -2,6 +2,7 @@ import {Spinner} from 'react-bootstrap';
 import styles from '../../styles/Home.module.css';
 import React from 'react';
 import logo from '../../components/logo';
+import Link from "next/link";
 
 
 export async function getStaticPaths() {
@@ -40,6 +41,7 @@ export default function Wait(props) {
                     Aguarde enquanto o {props.dishName} está sendo preparado
                 </h1>
                 <Spinner animation="border"/>
+                <Link href="/cozinha">Cozinha</Link>
             </main>
             {logo}
         </div>

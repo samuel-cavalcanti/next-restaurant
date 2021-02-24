@@ -1,86 +1,53 @@
-import styles from '../styles/Home.module.css'
+import styles from "../styles/Home.module.css";
 import logo from "../components/logo";
-import React, {useState} from "react";
-import {Card, ListGroup} from "react-bootstrap";
-import Pusher from "pusher-js";
+import React, { useState } from "react";
+import { Card, ListGroup } from "react-bootstrap";
 
+import { pedidos } from "../src/servers/pedidos";
 
-export async function getServerSideProps(context) {
-    const baseUrl = process.env.VERCEL_URL
-    const response = await fetch(`${baseUrl}/api/pedidos`)
-    const orders = await response.json()
+export default function Kitchen() {
+  const initialState = [
+    { id: 0, name: "Café", description: "com 2 colheres de açucar" },
+    {
+      id: 1,
+      name: "Arroz com feijão",
+      description: "retirar o feijão e o arroz, obrigado.",
+    },
+    { id: 2, name: "Macarrão 4 queijos", description: "" },
+  ];
 
-    const pusherOptions = {
-        channel: process.env.PUSHER_CHANNEL,
-        newOrderEvent: process.env.PUSHER_EVENT,
-        cluster: process.env.PUSHER_CLUSTER
-    }
+  console.log(pedidos);
 
-    return {
-        props: {
-            orders,
-            baseUrl,
-            pusherOptions
-        }
-    }
-}
+  const [orders, setOrders] = useState(pedidos);
 
+  const removeOrder = (index) => {
+    const newOrders = [...orders];
+    newOrders.splice(index, 1);
+    setOrders(newOrders);
+  };
 
-export default function Kitchen(props) {
-
-    const initialState = props.orders
-    const pusherOptions = props.pusherOptions
-
-    const [orders, setOrders] = useState(initialState)
-
-    const removeOrder = (index) => {
-        const newOrders = [...orders]
-        const [deletedOrder] = newOrders.splice(index, 1)
-        const url = `${props.baseUrl}/api/pedidos`
-        const requestInit = {
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            method: 'DELETE', body: JSON.stringify({id: deletedOrder.id})
-        }
-
-        fetch(url, requestInit)
-        setOrders(newOrders)
-    }
-
-    const newOrderEvent = (order) => {
-        const newOrders = [...orders, order]
-        setOrders(newOrders)
-    }
-
-    const pusher = new Pusher('0b600ebca53ae8bb534c', {
-        cluster: 'us2',
-        encrypted: true
-    })
-
-    const channel = pusher.subscribe(pusherOptions.channel)
-
-    channel.bind(pusherOptions.newOrderEvent, newOrderEvent.bind(this))
-
-
-    return (
-        <div className={styles.container}>
-            <main className={styles.main}>
-                <h1 className={styles.title} style={{margin: 50}}>
-                    Lista de pedidos
-                </h1>
-                <ListGroup>
-                    {orders.map((order, index) => (
-                        <div key={index} className={styles.card} onClick={() => removeOrder(index)}>
-                            <h3>{order.name}</h3>
-                            <Card.Text>{order.description}</Card.Text>
-                        </div>
-                    ))}
-                </ListGroup>
-
-            </main>
-            {logo}
-        </div>
-    )
+  return (
+    <div className={styles.container}>
+      <main className={styles.main}>
+        <h1 className={styles.title} style={{ margin: 50 }}>
+          Lista de pedidos
+        </h1>
+        <ListGroup>
+          {orders.map((order, index) => (
+            <div
+              key={index}
+              className={styles.card}
+              onClick={() => removeOrder(index)}
+            >
+              <h3>mesa: {order.numberTable}</h3>
+              <Card.Text>{order.title}</Card.Text>
+              <Card.Text>{order.name}</Card.Text>
+              <Card.Text>{order.description}</Card.Text>
+            </div>
+          ))}
+        </ListGroup>
+      </main>
+      {logo}
+    </div>
+  );
 }

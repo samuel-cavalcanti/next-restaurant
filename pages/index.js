@@ -1,60 +1,91 @@
-import {useState} from "react";
-import Menu from '../components/menu'
-import {useRouter} from "next/router";
-import Register from "../components/register";
+import React, { useState } from "react";
+import { Form, Button } from "react-bootstrap";
+import { useRouter } from "next/router";
 
-export async function getServerSideProps(context) {
-    const baseUrl = process.env.VERCEL_URL
-    const response = await fetch(`${baseUrl}/api/pratos`)
-    const dishes = await response.json()
+import { AddUser, users } from "../src/servers/user";
 
-    return {
-        props: {
-            dishes,
-            baseUrl
-        }
-    }
-}
+export default function cadastro() {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [CPF, setCPF] = useState("");
+  const [mesa, setMesa] = useState("");
 
-export default function Home(props) {
+  const cpfMask = (value) => {
+    return value
+      .replace(/\D/g, "")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})/, "$1-$2")
+      .replace(/(-\d{2})\d+?$/, "$1");
+  };
 
-
-    const dishes = props.dishes;
-    const router = useRouter()
-
-    const [selectedDish, setDish] = useState(undefined)
-
-    const selectDish = (dish) => {
-        setDish(dish)
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (name === "" || CPF.length !== 14 || mesa === "") {
+      alert("todos os campos são obrigatório");
     }
 
-    const menu = <Menu dishes={dishes} selectDish={selectDish.bind(this)}/>;
+    const data = {
+      name,
+      cpf: CPF,
+      numberTable: mesa,
+    };
 
+    AddUser(data);
+    console.log("users", users);
+    router.push("/pedidos");
+  }
 
-    const submitEvent = (client) => {
-        const order = {name: selectedDish.name, description: selectedDish.description, client}
-        const url = `${props.baseUrl}/api/pedidos`
-        const requestInit = {
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            method: 'POST', body: JSON.stringify(order)
-        }
+  console.log("users", users);
 
-        fetch(url, requestInit)
-        router.push(`/aguarde/${selectedDish.name}`);
-    }
-
-    const register = <Register submit={submitEvent.bind(this)}/>
-
-
-    console.log(selectedDish)
-
-    const currentSelection = selectedDish ? register : menu
-
-
-    return (
-        currentSelection
-    )
+  return (
+    <>
+      <h1 style={{ textAlign: "center", marginTop: 50 }}>
+        Bem vindo ao Next Restaurant
+      </h1>
+      <div
+        style={{
+          maxWidth: 500,
+          minWidth: 300,
+          margin: "auto",
+          padding: 20,
+        }}
+      >
+        <h2>Cadastro</h2>
+        <Form onSubmit={handleSubmit} style={{ width: "100%" }}>
+          <Form.Group controlId="formBasicEmail">
+            <Form.Label>Name</Form.Label>
+            <Form.Control
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Nome..."
+            />
+          </Form.Group>
+          <Form.Group controlId="formBasicPassword">
+            <Form.Label>CPF</Form.Label>
+            <Form.Control
+              type="text"
+              value={CPF}
+              onChange={(e) => setCPF(cpfMask(e.target.value))}
+              placeholder="CPF..."
+            />
+          </Form.Group>
+          <Form.Group controlId="formBasicPassword">
+            <Form.Label>Número da mesa</Form.Label>
+            <Form.Control
+              type="text"
+              value={mesa}
+              onChange={(e) => setMesa(e.target.value.replace(/\D/gim, ""))}
+              placeholder="Numero..."
+              maxLength="3"
+            />
+          </Form.Group>
+          <Button variant="primary" type="submit">
+            Submit
+          </Button>
+        </Form>
+      </div>
+    </>
+  );
 }

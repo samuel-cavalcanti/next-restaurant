@@ -1,55 +1,115 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
-import Link from 'next/link'
-import logo from '../components/logo'
-
-export default function Home() {
-
-  const restaurantTitle = ' Bem vindo ao Next Restaurant'
-  const headerTitle = 'Next Restaurant'
-  const subTitle = 'Escolha um prato'
-
-  const plates = [
-    { title: 'Quero Café', description: 'Café de verdade não tem leite', name: 'Café' },
-    { title: 'Café, eu quero', description: 'Café de verdade não tem açúcar', name: 'Café' },
-    { title: 'I could some coffee', description: `if the truth is hurts they don't believe it`, name: 'Café' },
-    { title: 'some coffee, I could', description: ' buy me a coffee  ☕', name: 'Café' },
-  ]
+import React, {useState} from "react";
+import MenuPage from '../components/MenuPage'
+import RegisterPage from "../components/registerPage";
+import WaitPage from "../components/WaitPage";
+import PusherClient from "../Utils/pusherClient";
+import ReadyPage from "../components/ReadyPage";
+import ErrorPage from "../components/ErrorPage";
 
 
+export async function getServerSideProps(context) {
+    const baseUrl = `https://${process.env.VERCEL_URL}`
 
-  const cards = plates.map((plate, index) => (
-    <Link key={index} href={`/aguarde/${plate.name}`} >
-      <a  className={styles.card}>
-        <h3>{plate.title}</h3>
-        <p>{plate.description}</p>
-      </a>
-    </Link>
-  ))
+    const response = await fetch(`${baseUrl}/api/pratos`)
+    const dishes = await response.json()
+
+    const pusherOptions = {
+        channel: process.env.PUSHER_CHANNEL,
+        removeOrderEvent: process.env.PUSHER_REMOVE_ORDER_EVENT,
+        cluster: process.env.PUSHER_CLUSTER
+    }
+
+    return {
+        props: {
+            dishes,
+            baseUrl,
+            pusherOptions
+        }
+    }
+}
+
+export default function Home(props) {
+
+    const states = {
+        selectDish: 0,
+        register: 1,
+        wait: 2,
+        ready: 3
+    }
+
+    const initialState = {
+        state: states.selectDish,
+        selectedDish: undefined,
+        client: undefined
+    }
+
+    const pusherAppKey = '0b600ebca53ae8bb534c'
+
+    const pusherClient = new PusherClient(pusherAppKey, props.pusherOptions.cluster, props.pusherOptions.channel)
 
 
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>{headerTitle}</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    const [globalState, setGlobalState] = useState(initialState)
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          {restaurantTitle}
-        </h1>
+    const selectDish = (dish) => {
+        setGlobalState({...globalState, selectedDish: dish, state: states.register})
+    }
 
-        <p className={styles.description}>
-          {subTitle}
-        </p>
+    const dishIsReady = (order) => {
+        console.log("new order", order)
+        console.log("global state", globalState)
 
-        <div className={styles.grid}>
-          {cards}
-        </div>
-      </main>
+        setGlobalState({...globalState, state: states.ready})
+    }
 
-      {logo}
-    </div>
-  )
+    const postOrder = async (order) => {
+        const url = `${props.baseUrl}/api/pedidos`
+        const requestInit = {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            method: 'POST', body: JSON.stringify(order)
+        }
+        const response = await fetch(url, requestInit)
+
+        const newOrder = await response.json()
+        console.log("client event listener: ", `${props.pusherOptions.removeOrderEvent}-${newOrder.id}`)
+
+        pusherClient.listenerEvent(`${props.pusherOptions.removeOrderEvent}-${newOrder.id}`, dishIsReady.bind(this))
+    }
+
+    const submitEvent = (client) => {
+        const selectedDish = globalState.selectedDish
+        const order = {name: selectedDish.name, description: selectedDish.description, client}
+
+        postOrder(order)
+        setGlobalState({...globalState, client: client, state: states.wait})
+
+    }
+
+
+    const registerPage = <RegisterPage submit={submitEvent.bind(this)}/>
+    const menuPage = <MenuPage dishes={props.dishes} selectDish={selectDish.bind(this)}/>
+    const waitPage = <WaitPage dishName={globalState.selectedDish?.name}/>
+    const readyPage = <ReadyPage client={globalState.client} dish={globalState.selectedDish}/>
+    const errorPage = <ErrorPage/>
+
+    switch (globalState.state) {
+        case states.selectDish:
+            return menuPage
+
+        case states.register:
+            return registerPage
+
+        case states.wait:
+            return waitPage
+
+        case states.ready:
+            return readyPage
+
+        default:
+            return errorPage
+    }
+
+
 }

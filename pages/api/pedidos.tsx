@@ -1,39 +1,63 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-
-type Order = {
-    id: Number,
-    description: string,
-    name: string
-}
+import type {NextApiRequest, NextApiResponse} from 'next'
+import Pusher from "pusher";
+import OrderDatabase, {Order} from "../../Utils/OrderDatabase";
 
 
-const orders: Order[] = [
-    { id: 0, name: 'Café', description: 'com 2 colheres de açucar' },
-    { id: 1, name: 'Arroz com feijão', description: 'retirar o feijão e o arroz, obrigado' },
-    { id: 2, name: 'Macarrão 4 queijos', description: '' },
-]
+const channels = new Pusher({
+    appId: process.env.PUSHER_APP_ID,
+    key: process.env.PUSHER_KEY,
+    secret: process.env.PUSHER_SECRET,
+    cluster: process.env.PUSHER_CLUSTER,
+})
 
-// const subscribers: NextApiResponse<any>[] =[]
+export default async (request: NextApiRequest, res: NextApiResponse) => {
 
-export default (request: NextApiRequest, res: NextApiResponse<any>) => {
+    const pusherChannel = process.env.PUSHER_CHANNEL
+    const pusherNewOrderEvent = process.env.PUSHER_NEW_ORDER_EVENT
+    const pusherRemoveOrderEvent = process.env.PUSHER_REMOVE_ORDER_EVENT
+
+    const orders = new OrderDatabase()
+
+
+    const postNewOrderEvent = async () => {
+        let newOrder = {...request.body} as Order
+        newOrder = orders.addOrder(newOrder)
+        await channels.trigger(pusherChannel, pusherNewOrderEvent, newOrder)
+
+        res.status(201).json(newOrder)
+        res.end()
+
+    }
+
+    const deleteOrderEvent = async () => {
+        const {id} = request.body
+        const order = orders.removeOrderById(id) || {}
+        await channels.trigger(pusherChannel, `${pusherRemoveOrderEvent}-${id}`, order)
+        res.json(order)
+        res.status(202).end()
+    }
 
     switch (request.method) {
         case 'GET':
-            res.status(200).json(orders);
+            const itens = orders.getOrders()
+            res.status(200).json(itens);
+            res.end()
+            console.log("get orders", itens)
             return;
 
-        // case 'HEAD':
-        //     res.status(200).json({ md5: 'not implemented' });
-        //     return;
 
-        // case 'POST':
-        //     // todo
-        //     res.status(201).json({})
-        //     return;
+        case 'POST':
+            await postNewOrderEvent()
+            return;
+
+        case 'DELETE':
+            await deleteOrderEvent()
+            return;
 
         default:
             res.status(405).end();
             return;
+
     }
 
 

@@ -12,9 +12,13 @@ const channels = new Pusher({
 
 export default async (request: NextApiRequest, res: NextApiResponse) => {
 
-    request.headers["access-control-allow-origin"] = "*"
-    request.headers["access-control-allow-methods"] = "POST"
-    request.headers["access-control-allow-headers"] = "Origin, Content-Type, X-Auth-Token"
+    res.setHeader('Access-Control-Allow-Credentials', 1)
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
+    res.setHeader(
+        'Access-Control-Allow-Headers',
+        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    )
 
     const pusherChannel = process.env.PUSHER_CHANNEL
     const pusherNewOrderEvent = process.env.PUSHER_NEW_ORDER_EVENT

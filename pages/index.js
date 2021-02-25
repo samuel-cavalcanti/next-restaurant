@@ -9,6 +9,7 @@ import ErrorPage from "../components/ErrorPage";
 
 export async function getServerSideProps(context) {
     const baseUrl = process.env.VERCEL_URL
+    console.log("baseURL", baseUrl)
     const response = await fetch(`${baseUrl}/api/pratos`)
     const dishes = await response.json()
 

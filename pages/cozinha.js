@@ -46,8 +46,7 @@ export default function Kitchen(props) {
         const requestInit = {
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': 'https://next-restaurant.vercel.app/api/pedidos'
+                'Content-Type': 'application/json'
             },
             method: 'DELETE', body: JSON.stringify({id: deletedOrder.id})
         }

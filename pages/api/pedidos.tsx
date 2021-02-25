@@ -15,7 +15,7 @@ export default async (request: NextApiRequest, res: NextApiResponse) => {
 
     // @ts-ignore
     res.setHeader('Access-Control-Allow-Credentials', true)
-    
+
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
     res.setHeader(
@@ -65,6 +65,10 @@ export default async (request: NextApiRequest, res: NextApiResponse) => {
             await deleteOrderEvent()
             return;
 
+        case 'OPTIONS':
+            res.setHeader('Allow', 'OPTIONS, GET, POST, DELETE')
+            res.status(200).end()
+            
         default:
             res.status(405).end();
             return;

@@ -66,7 +66,8 @@ export default function Home(props) {
         const requestInit = {
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': 'https://next-restaurant.vercel.app/api/pedidos'
             },
             method: 'POST', body: JSON.stringify(order)
         }

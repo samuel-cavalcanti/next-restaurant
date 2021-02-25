@@ -34,7 +34,10 @@ export default function Kitchen(props) {
     const pusherAppKey = '0b600ebca53ae8bb534c'
 
     const pusherClient = new PusherClient(pusherAppKey, props.pusherOptions.cluster, pusherOptions.channel)
-
+    // next-restaurant.vercel.app/:1 Access to fetch at 'https://next-restaurant-gpo9vz9qs-samuel-cavalcanti.vercel.app/api/pedidos'
+    // from origin 'https://next-restaurant.vercel.app' has been blocked by CORS policy: Response to preflight request doesn't pass access control check:
+    // No 'Access-Control-Allow-Origin' header is present on the requested resource.
+    // If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
 
     const removeOrder = (index) => {
         const newOrders = [...orders]
@@ -43,7 +46,8 @@ export default function Kitchen(props) {
         const requestInit = {
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': 'https://next-restaurant.vercel.app/api/pedidos'
             },
             method: 'DELETE', body: JSON.stringify({id: deletedOrder.id})
         }

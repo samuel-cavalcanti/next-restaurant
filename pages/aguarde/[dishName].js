@@ -1,8 +1,5 @@
-import {Spinner} from 'react-bootstrap';
-import styles from '../../styles/Home.module.css';
 import React from 'react';
-import logo from '../../components/logo';
-
+import WaitPage from "../../components/WaitPage";
 
 export async function getStaticPaths() {
     return {
@@ -29,20 +26,8 @@ export async function getStaticProps(context) {
 }
 
 
+export default function WaitPage(props) {
+    const wait = <WaitPage dishName={props.dishName}/>
 
-export default function Wait(props) {
-
-    return (
-
-        <div className={styles.container}>
-            <main className={styles.main}>
-                <h1 className={styles.title} style={{margin: 50}}>
-                    Aguarde enquanto o {props.dishName} está sendo preparado
-                </h1>
-                <Spinner animation="border"/>
-            </main>
-            {logo}
-        </div>
-
-    )
+    return wait
 }

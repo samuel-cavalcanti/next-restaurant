@@ -1,38 +1,66 @@
-import {useState} from "react";
-import Menu from '../components/menu'
-import {useRouter} from "next/router";
-import Register from "../components/register";
+import React, {useState} from "react";
+import MenuPage from '../components/MenuPage'
+import RegisterPage from "../components/registerPage";
+import WaitPage from "../components/WaitPage";
+import PusherClient from "../Utils/pusherClient";
+import ReadyPage from "../components/ReadyPage";
+import ErrorPage from "../components/ErrorPage";
+
 
 export async function getServerSideProps(context) {
     const baseUrl = process.env.VERCEL_URL
     const response = await fetch(`${baseUrl}/api/pratos`)
     const dishes = await response.json()
 
+    const pusherOptions = {
+        channel: process.env.PUSHER_CHANNEL,
+        removeOrderEvent: process.env.PUSHER_REMOVE_ORDER_EVENT,
+        cluster: process.env.PUSHER_CLUSTER
+    }
+
     return {
         props: {
             dishes,
-            baseUrl
+            baseUrl,
+            pusherOptions
         }
     }
 }
 
 export default function Home(props) {
 
-
-    const dishes = props.dishes;
-    const router = useRouter()
-
-    const [selectedDish, setDish] = useState(undefined)
-
-    const selectDish = (dish) => {
-        setDish(dish)
+    const states = {
+        selectDish: 0,
+        register: 1,
+        wait: 2,
+        ready: 3
     }
 
-    const menu = <Menu dishes={dishes} selectDish={selectDish.bind(this)}/>;
+    const initialState = {
+        state: states.selectDish,
+        selectedDish: undefined,
+        client: undefined
+    }
+
+    const pusherAppKey = '0b600ebca53ae8bb534c'
+
+    const pusherClient = new PusherClient(pusherAppKey, props.pusherOptions.cluster, props.pusherOptions.channel)
 
 
-    const submitEvent = (client) => {
-        const order = {name: selectedDish.name, description: selectedDish.description, client}
+    const [globalState, setGlobalState] = useState(initialState)
+
+    const selectDish = (dish) => {
+        setGlobalState({...globalState, selectedDish: dish, state: states.register})
+    }
+
+    const dishIsReady = (order) => {
+        console.log("new order", order)
+        console.log("global state", globalState)
+
+        setGlobalState({...globalState, state: states.ready})
+    }
+
+    const postOrder = async (order) => {
         const url = `${props.baseUrl}/api/pedidos`
         const requestInit = {
             headers: {
@@ -41,20 +69,46 @@ export default function Home(props) {
             },
             method: 'POST', body: JSON.stringify(order)
         }
+        const response = await fetch(url, requestInit)
 
-        fetch(url, requestInit)
-        router.push(`/aguarde/${selectedDish.name}`);
+        const newOrder = await response.json()
+        console.log("client event listener: ", `${props.pusherOptions.removeOrderEvent}-${newOrder.id}`)
+
+        pusherClient.listenerEvent(`${props.pusherOptions.removeOrderEvent}-${newOrder.id}`, dishIsReady.bind(this))
     }
 
-    const register = <Register submit={submitEvent.bind(this)}/>
+    const submitEvent = (client) => {
+        const selectedDish = globalState.selectedDish
+        const order = {name: selectedDish.name, description: selectedDish.description, client}
+
+        postOrder(order)
+        setGlobalState({...globalState, client: client, state: states.wait})
+
+    }
 
 
-    console.log(selectedDish)
+    const registerPage = <RegisterPage submit={submitEvent.bind(this)}/>
+    const menuPage = <MenuPage dishes={props.dishes} selectDish={selectDish.bind(this)}/>
+    const waitPage = <WaitPage dishName={globalState.selectedDish?.name}/>
+    const readyPage = <ReadyPage client={globalState.client} dish={globalState.selectedDish}/>
+    const errorPage = <ErrorPage/>
 
-    const currentSelection = selectedDish ? register : menu
+    switch (globalState.state) {
+        case states.selectDish:
+            return menuPage
+
+        case states.register:
+            return registerPage
+
+        case states.wait:
+            return waitPage
+
+        case states.ready:
+            return readyPage
+
+        default:
+            return errorPage
+    }
 
 
-    return (
-        currentSelection
-    )
 }

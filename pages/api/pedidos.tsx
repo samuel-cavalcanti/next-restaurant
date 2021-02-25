@@ -1,30 +1,7 @@
 import type {NextApiRequest, NextApiResponse} from 'next'
 import Pusher from "pusher";
+import OrderDatabase, {Order} from "../../Utils/OrderDatabase";
 
-
-type RestaurantClient = {
-    name: string,
-    cpf: string,
-}
-
-type Order = {
-    id: number,
-    description: string,
-    name: string,
-    client: RestaurantClient,
-}
-
-
-const orders: { [key: number]: Order } = {
-    0: {id: 0, name: 'Café', description: 'com 2 colheres de açucar', client: {name: 'anna', cpf: '123.456.789.12'}},
-    1: {
-        id: 1,
-        name: 'Arroz com feijão',
-        description: 'retirar o feijão e o arroz, obrigado',
-        client: {name: 'anna', cpf: '123.456.789.12'}
-    },
-    2: {id: 2, name: 'Macarrão 4 queijos', description: '', client: {name: 'anna', cpf: '123.456.789.12'}},
-}
 
 const channels = new Pusher({
     appId: process.env.PUSHER_APP_ID,
@@ -33,48 +10,48 @@ const channels = new Pusher({
     cluster: process.env.PUSHER_CLUSTER,
 })
 
-export default (request: NextApiRequest, res: NextApiResponse) => {
+export default async (request: NextApiRequest, res: NextApiResponse) => {
 
     const pusherChannel = process.env.PUSHER_CHANNEL
-    const pusherEvent = process.env.PUSHER_EVENT
+    const pusherNewOrderEvent = process.env.PUSHER_NEW_ORDER_EVENT
+    const pusherRemoveOrderEvent = process.env.PUSHER_REMOVE_ORDER_EVENT
 
-    let lastId = 2
+    const orders = new OrderDatabase()
 
 
     const postNewOrderEvent = async () => {
-        const newOrder = {...request.body, id: lastId} as Order
-        orders[lastId] = newOrder
-        lastId++
+        let newOrder = {...request.body} as Order
+        newOrder = orders.addOrder(newOrder)
+        await channels.trigger(pusherChannel, pusherNewOrderEvent, newOrder)
 
-        await channels.trigger(pusherChannel, pusherEvent, newOrder)
         res.status(201).json(newOrder)
         res.end()
-        console.log("new order event")
+
     }
 
-    const deleteOrderEvent = () => {
+    const deleteOrderEvent = async () => {
         const {id} = request.body
-        const order = orders[id]
-        delete orders[id]
+        const order = orders.removeOrderById(id) || {}
+        await channels.trigger(pusherChannel, `${pusherRemoveOrderEvent}-${id}`, order)
         res.json(order)
         res.status(202).end()
-
     }
 
     switch (request.method) {
         case 'GET':
-            res.status(200).json(Object.values(orders));
+            const itens = orders.getOrders()
+            res.status(200).json(itens);
             res.end()
-            console.log("get orders")
+            console.log("get orders", itens)
             return;
 
 
         case 'POST':
-            postNewOrderEvent()
+            await postNewOrderEvent()
             return;
 
         case 'DELETE':
-            deleteOrderEvent()
+            await deleteOrderEvent()
             return;
 
         default:

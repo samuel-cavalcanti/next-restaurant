@@ -1,5 +1,5 @@
 import React from "react";
-import Register from "../components/register";
+import RegisterPage from "../components/registerPage";
 
 
 export default function cadastro() {
@@ -8,7 +8,7 @@ export default function cadastro() {
         console.log(client)
     }
 
-    const register = <Register submit={submit.bind(this)}/>
+    const register = <RegisterPage submit={submit.bind(this)}/>
 
 
     return (

@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import {Alert, Button, Form} from "react-bootstrap";
 
 
-export default function Register(props) {
+export default function RegisterPage(props) {
 
     const emptyState = ""
 

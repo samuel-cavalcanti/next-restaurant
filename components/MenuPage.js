@@ -2,7 +2,7 @@ import styles from "../styles/Home.module.css";
 import Head from "next/head";
 import logo from "./logo";
 
-export default function Menu(props) {
+export default function MenuPage(props) {
 
     const restaurantTitle = ' Bem vindo ao Next Restaurant'
     const headerTitle = 'Next Restaurant'

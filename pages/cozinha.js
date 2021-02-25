@@ -2,8 +2,7 @@ import styles from '../styles/Home.module.css'
 import logo from "../components/logo";
 import React, {useState} from "react";
 import {Card, ListGroup} from "react-bootstrap";
-import Pusher from "pusher-js";
-
+import PusherClient from "../Utils/pusherClient"
 
 export async function getServerSideProps(context) {
     const baseUrl = process.env.VERCEL_URL
@@ -12,7 +11,7 @@ export async function getServerSideProps(context) {
 
     const pusherOptions = {
         channel: process.env.PUSHER_CHANNEL,
-        newOrderEvent: process.env.PUSHER_EVENT,
+        newOrderEvent: process.env.PUSHER_NEW_ORDER_EVENT,
         cluster: process.env.PUSHER_CLUSTER
     }
 
@@ -30,8 +29,12 @@ export default function Kitchen(props) {
 
     const initialState = props.orders
     const pusherOptions = props.pusherOptions
-
     const [orders, setOrders] = useState(initialState)
+
+    const pusherAppKey = '0b600ebca53ae8bb534c'
+
+    const pusherClient = new PusherClient(pusherAppKey, props.pusherOptions.cluster, pusherOptions.channel)
+
 
     const removeOrder = (index) => {
         const newOrders = [...orders]
@@ -54,14 +57,7 @@ export default function Kitchen(props) {
         setOrders(newOrders)
     }
 
-    const pusher = new Pusher('0b600ebca53ae8bb534c', {
-        cluster: 'us2',
-        encrypted: true
-    })
-
-    const channel = pusher.subscribe(pusherOptions.channel)
-
-    channel.bind(pusherOptions.newOrderEvent, newOrderEvent.bind(this))
+    pusherClient.listenerEvent(props.pusherOptions.newOrderEvent, newOrderEvent.bind(this))
 
 
     return (

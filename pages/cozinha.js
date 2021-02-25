@@ -5,7 +5,7 @@ import {Card, ListGroup} from "react-bootstrap";
 import PusherClient from "../Utils/pusherClient"
 
 export async function getServerSideProps(context) {
-    const baseUrl = process.env.VERCEL_URL
+    const baseUrl = 'https://next-restaurant.vercel.app'
     const response = await fetch(`${baseUrl}/api/pedidos`)
     const orders = await response.json()
 

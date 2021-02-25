@@ -9,6 +9,7 @@ Para participar do projeto você precisa ter o [nodejs](https://nodejs.org/) ins
 - faça o fork do repositório
 - instale as dependências (comando: **yarn** ou **yarn install**)
 - submeta pull requests :D
+- para rodar testes automatizados use **yarn test**  
 
 Dúvidas ? estou no zap. Qualquer hora qualquer momento.
 

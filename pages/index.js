@@ -8,7 +8,7 @@ import ErrorPage from "../components/ErrorPage";
 
 
 export async function getServerSideProps(context) {
-    const baseUrl = 'https://next-restaurant.vercel.app'
+    const baseUrl = `https://${process.env.VERCEL_URL}`
 
     const response = await fetch(`${baseUrl}/api/pratos`)
     const dishes = await response.json()

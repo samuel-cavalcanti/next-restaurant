@@ -19,8 +19,10 @@ Dúvidas ? estou no zap. Qualquer hora qualquer momento.
 [next restaurant cozinha](https://next-restaurant.vercel.app/cozinha) **onde os cozinheiros irão ver os pedidos**  
 
 OBS: atualmente só é permitido a realização do pedido de café, qualquer outro end point é invalidado.
+<div align="center">
+
+![Next Restaurant](images/next_restaurant.gif)
 
 ### Gif demonstração
 
-![Next Restaurant](images/next_restaurant.gif)
-  
+</div>

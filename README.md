@@ -37,3 +37,24 @@ OBS: atualmente só é permitido a realização do pedido de café, qualquer out
 3. Peça um café.
 
 4. Na cozinha clique no pedido. Clicar no pedido significa finaliza-lo.
+
+### Funcionamento do aplicativo
+
+<div align="center">
+
+![Maquina de estados](images/next_restaurant_state_machine.png)
+
+### Máquina de estados da aplicação
+
+</div>
+
+- Cardápio, é o estado onde o cliente vai selecionar um parto
+
+- Registro, é o estado onde o cliente se identifica dizendo seu nome e cpf
+e submete seu pedido para a cozinha.
+
+- Espera, é o estado que a aplicação informa ao usuário que seu pedido foi enviado
+e aguarda a cozinha finalizar o seu pedido.
+
+- Pronto, é o estado onde a aplicação informa ao usuário que o pedido está pronto
+para ele ir buscar.
